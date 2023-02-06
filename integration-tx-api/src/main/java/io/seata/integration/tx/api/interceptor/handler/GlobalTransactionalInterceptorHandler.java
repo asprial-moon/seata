@@ -141,11 +141,15 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
 
     @Override
     protected Object doInvoke(InvocationWrapper invocation) throws Throwable {
+        // 获取执行的方法
         Class<?> targetClass = invocation.getTarget().getClass();
         Method specificMethod = invocation.getMethod();
         if (specificMethod != null && !specificMethod.getDeclaringClass().equals(Object.class)) {
             final Method method = invocation.getMethod();
+            // 获取GlobalTransactional(全局事务)、GlobalLock(全局锁)元数据
             final GlobalTransactional globalTransactionalAnnotation = getAnnotation(method, targetClass, GlobalTransactional.class);
+            // GlobalLock会将本地事务的执行纳入seata分布式事务的管理，一起竞争全局锁
+            // 保证全局事务在执行的时候，本地业务员不可以操作全局事务中的记录
             final GlobalLock globalLockAnnotation = getAnnotation(method, targetClass, GlobalLock.class);
             boolean localDisable = disable || (ATOMIC_DEGRADE_CHECK.get() && degradeNum >= degradeCheckAllowTimes);
             if (!localDisable) {
@@ -164,8 +168,10 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
                     } else {
                         transactional = this.aspectTransactional;
                     }
+                    // 执行全局事务
                     return handleGlobalTransaction(invocation, transactional);
                 } else if (globalLockAnnotation != null) {
+                    // 执行全局锁
                     return handleGlobalLock(invocation, globalLockAnnotation);
                 }
             }

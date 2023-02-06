@@ -258,6 +258,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
      * Corresponding interceptor:
      * @see io.seata.rm.tcc.interceptor.TccActionInterceptorHandler // the interceptor of TCC mode
      */
+    // 代理增强，Spring所有的Bean都会经过此方法
     @Override
     protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
         // do checkers
@@ -266,6 +267,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
         }
 
         try {
+            // 加锁防止并发
             synchronized (PROXYED_SET) {
                 if (PROXYED_SET.contains(beanName)) {
                     return bean;

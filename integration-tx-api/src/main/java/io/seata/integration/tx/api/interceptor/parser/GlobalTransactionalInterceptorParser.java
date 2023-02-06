@@ -51,7 +51,9 @@ public class GlobalTransactionalInterceptorParser implements InterfaceParser {
         Class<?> serviceInterface = DefaultTargetClassParser.get().findTargetClass(target);
         Class<?>[] interfacesIfJdk = DefaultTargetClassParser.get().findInterfaces(target);
 
+        // 判断是否有相关的事务注解，如果没有就不代理
         if (existsAnnotation(serviceInterface) || existsAnnotation(interfacesIfJdk)) {
+            // 存在全局事务注解标注的Bean，添加拦截器
             ProxyInvocationHandler proxyInvocationHandler = new GlobalTransactionalInterceptorHandler(FailureHandlerHolder.getFailureHandler(), methodsToProxy);
             ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION, (ConfigurationChangeListener) proxyInvocationHandler);
             return proxyInvocationHandler;

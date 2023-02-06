@@ -56,6 +56,7 @@ public class DefaultInterfaceParser implements InterfaceParser {
     @Override
     public ProxyInvocationHandler parserInterfaceToProxy(Object target) throws Exception {
         for (InterfaceParser interfaceParser : ALL_INTERFACE_PARSERS) {
+            // 策略模式(如果是TCC，返回TCC拦截器，否则返回)
             ProxyInvocationHandler proxyInvocationHandler = interfaceParser.parserInterfaceToProxy(target);
             if (proxyInvocationHandler != null) {
                 return proxyInvocationHandler;
