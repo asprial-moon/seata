@@ -40,10 +40,12 @@ public class ProxyUtil {
                 if (PROXYED_SET.containsKey(target)) {
                     return (T) PROXYED_SET.get(target);
                 }
+                // 返回拦截器
                 ProxyInvocationHandler proxyInvocationHandler = DefaultInterfaceParser.get().parserInterfaceToProxy(target);
                 if (proxyInvocationHandler == null) {
                     return target;
                 }
+                // 生成代理对象
                 T proxy = (T) new ByteBuddy().subclass(target.getClass())
                         .method(isDeclaredBy(target.getClass()))
                         .intercept(InvocationHandlerAdapter.of(new DefaultInvocationHandler(proxyInvocationHandler, target)))
@@ -52,6 +54,7 @@ public class ProxyUtil {
                         .getLoaded()
                         .getDeclaredConstructor()
                         .newInstance();
+                // 添加到已代理SET(避免重复添加)
                 PROXYED_SET.put(target, proxy);
                 return proxy;
             }

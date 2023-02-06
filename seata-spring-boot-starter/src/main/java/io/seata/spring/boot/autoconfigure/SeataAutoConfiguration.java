@@ -63,6 +63,7 @@ public class SeataAutoConfiguration {
             LOGGER.info("Automatically configure Seata");
         }
 
+        // 全局事务扫描器
         // set bean factory
         GlobalTransactionScanner.setBeanFactory(beanFactory);
 

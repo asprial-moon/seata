@@ -200,7 +200,7 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
                 public Object execute() throws Throwable {
                     return methodInvocation.proceed();
                 }
-
+                // 获取事务名称，默认获取方法名
                 public String name() {
                     String name = aspectTransactional.getName();
                     if (!StringUtils.isNullOrEmpty(name)) {
@@ -209,9 +209,13 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
                     return formatMethod(methodInvocation.getMethod());
                 }
 
+                /**
+                 * 解析GlobalTransactional注解属性，封装为对象
+                 */
                 @Override
                 public TransactionInfo getTransactionInfo() {
                     // reset the value of timeout
+                    // 获取超时时间，默认60
                     int timeout = aspectTransactional.getTimeoutMills();
                     if (timeout <= 0 || timeout == DEFAULT_GLOBAL_TRANSACTION_TIMEOUT) {
                         timeout = defaultGlobalTransactionTimeout;

@@ -192,7 +192,11 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         this.status = GlobalStatus.Begin;
         this.beginTime = System.currentTimeMillis();
         this.active = true;
+        // 为Session中添加回调监听 SessionHolder.getRootSessionManager()去获取一个全局Session管理器DataBaseSessionManager
+        // 观察者设计模式，创建DataBaseSessionManager
         SessionHolder.getRootSessionManager().onBegin(this);
+
+        // 全局事务开始
         for (SessionLifecycleListener lifecycleListener : lifecycleListeners) {
             lifecycleListener.onBegin(this);
         }

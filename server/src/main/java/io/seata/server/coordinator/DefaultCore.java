@@ -129,6 +129,7 @@ public class DefaultCore implements Core {
     @Override
     public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
         throws TransactionException {
+        // 创建全局事务 Session
         GlobalSession session = GlobalSession.createGlobalSession(applicationId, transactionServiceGroup, name, timeout);
         MDC.put(RootContext.MDC_KEY_XID, session.getXid());
 

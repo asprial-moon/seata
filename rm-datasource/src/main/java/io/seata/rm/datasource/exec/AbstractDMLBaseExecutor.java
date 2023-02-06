@@ -93,9 +93,13 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
      * @throws Exception the exception
      */
     protected T executeAutoCommitFalse(Object[] args) throws Exception {
+        // 前镜像
         TableRecords beforeImage = beforeImage();
+        // 执行具体业务
         T result = statementCallback.execute(statementProxy.getTargetStatement(), args);
+        // 后镜像
         TableRecords afterImage = afterImage(beforeImage);
+        // 暂存UndoLog, 为了Commit的时候保存到数据库
         prepareUndoLog(beforeImage, afterImage);
         return result;
     }
@@ -132,9 +136,12 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
     protected T executeAutoCommitTrue(Object[] args) throws Throwable {
         ConnectionProxy connectionProxy = statementProxy.getConnectionProxy();
         try {
+            // 更改为手动提交
             connectionProxy.changeAutoCommit();
             return new LockRetryPolicy(connectionProxy).execute(() -> {
+                // 调用手动提交方法，得到分支业务最终结果
                 T result = executeAutoCommitFalse(args);
+                // 执行提交
                 connectionProxy.commit();
                 return result;
             });

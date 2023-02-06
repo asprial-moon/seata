@@ -65,7 +65,13 @@ import static io.seata.common.DefaultValues.DEFAULT_TX_GROUP_OLD;
  */
 public class GlobalTransactionScanner extends AbstractAutoProxyCreator
         implements ConfigurationChangeListener, InitializingBean, ApplicationContextAware, DisposableBean {
-
+    /**
+     * AbstractAutoProxyCreator     Aop动态代理，增强Bean
+     * ConfigurationChangeListener  监听器基准几口
+     * InitializingBean             Bean初始化
+     * ApplicationContextAware      Spring容器
+     * DisposableBean               Spring容器销毁
+     */
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalTransactionScanner.class);

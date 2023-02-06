@@ -247,12 +247,15 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     private void processGlobalTransactionCommit() throws SQLException {
         try {
+            // 注册分支事务
             register();
         } catch (TransactionException e) {
             recognizeLockKeyConflictException(e, context.buildLockKeys());
         }
         try {
+            // 写入数据undoLog
             UndoLogManagerFactory.getUndoLogManager(this.getDbType()).flushUndoLogs(this);
+            // 执行原生提交
             targetConnection.commit();
         } catch (Throwable ex) {
             LOGGER.error("process connectionProxy commit error: {}", ex.getMessage(), ex);
@@ -355,14 +358,17 @@ public class ConnectionProxy extends AbstractConnectionProxy {
                 try {
                     return callable.call();
                 } catch (LockConflictException lockConflict) {
+                    // 出现全局锁冲突，回滚本地事务
                     onException(lockConflict);
                     // AbstractDMLBaseExecutor#executeAutoCommitTrue the local lock is released
                     if (connection.getContext().isAutoCommitChanged()
                         && lockConflict.getCode() == TransactionExceptionCode.LockKeyConflictFailFast) {
                         lockConflict.setCode(TransactionExceptionCode.LockKeyConflict);
                     }
+                    // 线程睡眠10ms，然后重试，超过重试次数，判处异常结束流程
                     lockRetryController.sleep(lockConflict);
                 } catch (Exception e) {
+                    // 出现非全局锁冲突的异常，则直接报错返回
                     onException(e);
                     throw e;
                 }

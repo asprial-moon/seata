@@ -52,14 +52,17 @@ public class TransactionalTemplate {
      */
     public Object execute(TransactionalExecutor business) throws Throwable {
         // 1. Get transactionInfo
+        // 1. 获取事务信息
         TransactionInfo txInfo = business.getTransactionInfo();
         if (txInfo == null) {
             throw new ShouldNeverHappenException("transactionInfo does not exist");
         }
         // 1.1 Get current transaction, if not null, the tx role is 'GlobalTransactionRole.Participant'.
+        // 1.1 获取当前事务，主要获取Xid
         GlobalTransaction tx = GlobalTransactionContext.getCurrent();
 
         // 1.2 Handle the transaction propagation.
+        // 1.2 根据配置的不同事务的传播行为，执行不同的逻辑
         Propagation propagation = txInfo.getPropagation();
         SuspendedResourcesHolder suspendedResourcesHolder = null;
         try {
@@ -112,6 +115,7 @@ public class TransactionalTemplate {
             }
 
             // 1.3 If null, create new transaction with role 'GlobalTransactionRole.Launcher'.
+            // 1.3 当前没有事务，则创建一个新的事务
             if (tx == null) {
                 tx = GlobalTransactionContext.createNew();
             }
@@ -122,24 +126,33 @@ public class TransactionalTemplate {
             try {
                 // 2. If the tx role is 'GlobalTransactionRole.Launcher', send the request of beginTransaction to TC,
                 //    else do nothing. Of course, the hooks will still be triggered.
+                // 2. 开始执行全局事务
                 beginTransaction(txInfo, tx);
 
                 Object rs;
                 try {
                     // Do Your Business
+                    // 执行当前业务逻辑：
+                    // 1. 在TC注册当前分支事务，TC会在branch_table中插入一条分支事务数据
+                    // 2. 执行本地Update语句，并在执行前后查询数据状态，并把数据前后镜像存入到undo_log表中
+                    // 3. 远程调用其它应用，远程应用接收到xid，也会注册分支事务，写入branch_table及本地undo_log
+                    // 4. 会在lock_table表中插入全局锁数据（一个分支一条）
                     rs = business.execute();
                 } catch (Throwable ex) {
                     // 3. The needed business exception to rollback.
+                    // 3. 发生异常全局回滚，各个数据通过undo_log表进行事务补偿
                     completeTransactionAfterThrowing(txInfo, tx, ex);
                     throw ex;
                 }
 
                 // 4. everything is fine, commit.
+                // 4. 全局提交事务
                 commitTransaction(tx, txInfo);
 
                 return rs;
             } finally {
                 //5. clear
+                // 5.清除所有资源
                 resumeGlobalLockConfig(previousConfig);
                 triggerAfterCompletion();
                 cleanUp();
