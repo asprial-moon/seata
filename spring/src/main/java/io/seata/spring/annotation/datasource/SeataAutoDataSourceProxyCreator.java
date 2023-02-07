@@ -73,6 +73,7 @@ public class SeataAutoDataSourceProxyCreator extends AbstractAutoProxyCreator {
     @Override
     protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
         // we only care DataSource bean
+        // 只关注 DataSource 类型bean
         if (!(bean instanceof DataSource)) {
             return bean;
         }
@@ -86,6 +87,7 @@ public class SeataAutoDataSourceProxyCreator extends AbstractAutoProxyCreator {
             }
             // else, build proxy,  put <origin, proxy> to holder and return enhancer
             DataSource origin = (DataSource) bean;
+            // 返回代理对象
             SeataDataSourceProxy proxy = buildProxy(origin, dataSourceProxyMode);
             DataSourceProxyHolder.put(origin, proxy);
             LOGGER.info("Auto proxy data source '{}' by '{}' mode.", beanName, dataSourceProxyMode);
@@ -111,6 +113,7 @@ public class SeataAutoDataSourceProxyCreator extends AbstractAutoProxyCreator {
     }
 
     SeataDataSourceProxy buildProxy(DataSource origin, String proxyMode) {
+        // 根据不同模式创建代理对象
         if (BranchType.AT.name().equalsIgnoreCase(proxyMode)) {
             return new DataSourceProxy(origin);
         }

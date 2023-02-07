@@ -105,8 +105,10 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
     }
 
     private void init(DataSource dataSource, String resourceGroupId) {
+        // 资源组ID，默认是 ”default“ 这个默认值
         this.resourceGroupId = resourceGroupId;
         try (Connection connection = dataSource.getConnection()) {
+            // 根据原始数据源得到 JDBC 连接和数据类型
             jdbcUrl = connection.getMetaData().getURL();
             dbType = JdbcUtils.getDbType(jdbcUrl);
             if (JdbcConstants.ORACLE.equals(dbType)) {
@@ -121,6 +123,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         initResourceId();
         DefaultResourceManager.get().registerResource(this);
         if (ENABLE_TABLE_META_CHECKER_ENABLE) {
+            // 如果配置开关打开，会定时线程池不断更新表的元数据信息
             tableMetaExecutor.scheduleAtFixedRate(() -> {
                 try (Connection connection = dataSource.getConnection()) {
                     TableMetaCacheFactory.getTableMetaCache(DataSourceProxy.this.getDbType())

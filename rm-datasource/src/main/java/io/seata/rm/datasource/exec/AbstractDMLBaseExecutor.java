@@ -99,7 +99,7 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
         T result = statementCallback.execute(statementProxy.getTargetStatement(), args);
         // 后镜像
         TableRecords afterImage = afterImage(beforeImage);
-        // 暂存UndoLog, 为了Commit的时候保存到数据库
+        // 暂存 UndoLog, 为了在 Commit 的时候保存到数据库
         prepareUndoLog(beforeImage, afterImage);
         return result;
     }

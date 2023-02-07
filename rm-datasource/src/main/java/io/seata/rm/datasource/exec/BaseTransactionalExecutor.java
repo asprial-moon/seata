@@ -118,9 +118,10 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
     public T execute(Object... args) throws Throwable {
         String xid = RootContext.getXID();
         if (xid != null) {
+            // 获取 xid
             statementProxy.getConnectionProxy().bind(xid);
         }
-
+        // 设置全局锁
         statementProxy.getConnectionProxy().setGlobalLockRequire(RootContext.requireGlobalLock());
         return doExecute(args);
     }
@@ -390,8 +391,9 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
         String lockKeys = buildLockKey(lockKeyRecords);
         if (null != lockKeys) {
             connectionProxy.appendLockKey(lockKeys);
-
+            // 声明 SQL 类型，前后快照
             SQLUndoLog sqlUndoLog = buildUndoItem(beforeImage, afterImage);
+            // 执行写入快照
             connectionProxy.appendUndoLog(sqlUndoLog);
         }
     }

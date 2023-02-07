@@ -104,16 +104,20 @@ public abstract class AbstractConnectionProxy implements Connection {
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
+        // 数据库类型，比如 MySql，Oracle等
         String dbType = getDbType();
         // support oracle 10.2+
         PreparedStatement targetPreparedStatement = null;
+        // 如果是 AT 模式且开启全局事务，那么会进入 if 分支
         if (BranchType.AT == RootContext.getBranchType()) {
             List<SQLRecognizer> sqlRecognizers = SQLVisitorFactory.get(sql, dbType);
             if (sqlRecognizers != null && sqlRecognizers.size() == 1) {
                 SQLRecognizer sqlRecognizer = sqlRecognizers.get(0);
                 if (sqlRecognizer != null && sqlRecognizer.getSQLType() == SQLType.INSERT) {
+                    // 得到表的元数据
                     TableMeta tableMeta = TableMetaCacheFactory.getTableMetaCache(dbType).getTableMeta(getTargetConnection(),
                             sqlRecognizer.getTableName(), getDataSourceProxy().getResourceId());
+                    // 得到表的主键列名
                     String[] pkNameArray = new String[tableMeta.getPrimaryKeyOnlyName().size()];
                     tableMeta.getPrimaryKeyOnlyName().toArray(pkNameArray);
                     targetPreparedStatement = getTargetConnection().prepareStatement(sql,pkNameArray);
@@ -123,6 +127,7 @@ public abstract class AbstractConnectionProxy implements Connection {
         if (targetPreparedStatement == null) {
             targetPreparedStatement = getTargetConnection().prepareStatement(sql);
         }
+        // 创建 PreparedStatementProxy 代理
         return new PreparedStatementProxy(this, targetPreparedStatement, sql);
     }
 
@@ -203,7 +208,9 @@ public abstract class AbstractConnectionProxy implements Connection {
 
     @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+        // 调用真实连接对象获取 Statement 对象
         Statement statement = targetConnection.createStatement(resultSetType, resultSetConcurrency);
+        // 创建 Statement 的代理
         return new StatementProxy<Statement>(this, statement);
     }
 

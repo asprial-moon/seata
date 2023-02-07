@@ -242,6 +242,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
             undoLogContent = CompressorFactory.getCompressor(compressorType.getCode()).compress(undoLogContent);
         }
 
+        // 写入数据库的具体位置
         insertUndoLogWithNormal(xid, branchId, buildContext(parser.getName(), compressorType), undoLogContent, cp.getTargetConnection());
     }
 

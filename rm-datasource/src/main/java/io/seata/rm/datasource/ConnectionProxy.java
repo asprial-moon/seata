@@ -226,6 +226,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
 
     private void doCommit() throws SQLException {
+        // 判断是否存在全局事务
         if (context.inGlobalTransaction()) {
             processGlobalTransactionCommit();
         } else if (context.isGlobalLockRequire()) {
@@ -268,11 +269,13 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.reset();
     }
 
+    // 注册分支事务，生成分支事务id
     private void register() throws TransactionException {
         if (!context.hasUndoLog() || !context.hasLockKey()) {
             return;
         }
 
+        // 注册分支事务
         Long branchId = DefaultResourceManager.get().branchRegister(BranchType.AT, getDataSourceProxy().getResourceId(),
             null, context.getXid(), context.getApplicationData(),
             context.buildLockKeys());
