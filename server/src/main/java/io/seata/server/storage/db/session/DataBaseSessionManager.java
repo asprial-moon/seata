@@ -60,6 +60,7 @@ public class DataBaseSessionManager extends AbstractSessionManager implements In
 
     @Override
     public void addGlobalSession(GlobalSession session) throws TransactionException {
+        // 写入 session
         boolean ret = transactionStoreManager.writeSession(LogOperation.GLOBAL_ADD, session);
         if (!ret) {
             throw new StoreException("addGlobalSession failed.");

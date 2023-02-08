@@ -189,15 +189,19 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
 
     @Override
     public void begin() throws TransactionException {
+        // 声明全局事务开始
         this.status = GlobalStatus.Begin;
+        // 开始时间
         this.beginTime = System.currentTimeMillis();
+        // 激活全局事务
         this.active = true;
         // 为Session中添加回调监听 SessionHolder.getRootSessionManager()去获取一个全局Session管理器DataBaseSessionManager
         // 观察者设计模式，创建DataBaseSessionManager
         SessionHolder.getRootSessionManager().onBegin(this);
 
-        // 全局事务开始
+        // 将 SessionManager 放入到集合中，调用 onBegin 方法
         for (SessionLifecycleListener lifecycleListener : lifecycleListeners) {
+            // 调用父级抽象类方法
             lifecycleListener.onBegin(this);
         }
     }

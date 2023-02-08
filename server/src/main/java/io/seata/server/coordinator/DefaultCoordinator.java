@@ -247,9 +247,13 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
         branchRemoveExecutor.execute(new BranchRemoveTask(globalSession));
     }
 
+    /**
+     * 处理全局事务开始
+     */
     @Override
     protected void doGlobalBegin(GlobalBeginRequest request, GlobalBeginResponse response, RpcContext rpcContext)
             throws TransactionException {
+        // 响应客户端 XID
         response.setXid(core.begin(rpcContext.getApplicationId(), rpcContext.getTransactionServiceGroup(),
                 request.getTransactionName(), request.getTimeout()));
         if (LOGGER.isInfoEnabled()) {
@@ -258,6 +262,9 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
         }
     }
 
+    /**
+     * 处理全局事务提交
+     */
     @Override
     protected void doGlobalCommit(GlobalCommitRequest request, GlobalCommitResponse response, RpcContext rpcContext)
             throws TransactionException {
@@ -265,6 +272,9 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
         response.setGlobalStatus(core.commit(request.getXid()));
     }
 
+    /**
+     * 处理全局回滚
+     */
     @Override
     protected void doGlobalRollback(GlobalRollbackRequest request, GlobalRollbackResponse response,
                                     RpcContext rpcContext) throws TransactionException {

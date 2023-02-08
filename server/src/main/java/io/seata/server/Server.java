@@ -77,6 +77,7 @@ public class Server {
         //log store mode : file, db, redis
         SessionHolder.init();
         LockerManagerFactory.init();
+        // 默认协调者
         DefaultCoordinator coordinator = DefaultCoordinator.getInstance(nettyRemotingServer);
         coordinator.init();
         nettyRemotingServer.setHandler(coordinator);

@@ -97,6 +97,7 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
 
     @Override
     public boolean writeSession(LogOperation logOperation, SessionStorable session) {
+        // 第一次进入一定写入
         if (LogOperation.GLOBAL_ADD.equals(logOperation)) {
             return logStore.insertGlobalTransactionDO(SessionConverter.convertGlobalTransactionDO(session));
         } else if (LogOperation.GLOBAL_UPDATE.equals(logOperation)) {

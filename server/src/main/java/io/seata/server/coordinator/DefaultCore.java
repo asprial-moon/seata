@@ -133,6 +133,7 @@ public class DefaultCore implements Core {
         GlobalSession session = GlobalSession.createGlobalSession(applicationId, transactionServiceGroup, name, timeout);
         MDC.put(RootContext.MDC_KEY_XID, session.getXid());
 
+        // 全局事务开启
         session.begin();
 
         // transaction start event

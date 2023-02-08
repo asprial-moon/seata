@@ -100,8 +100,9 @@ public class SessionHolder {
             sessionMode = StoreConfig.getSessionMode();
         }
         if (SessionMode.DB.equals(sessionMode)) {
+            // 通过 SPI 机制读取 SessionManager 接口实现类，读取的是 META-INF.service 目录，在通过反射机制创建对象 DataBaseSessionManager
             ROOT_SESSION_MANAGER = EnhancedServiceLoader.load(SessionManager.class, SessionMode.DB.getName());
-
+            // 获取分布式锁
             DISTRIBUTED_LOCKER = DistributedLockerFactory.getDistributedLocker(SessionMode.DB.getName());
         } else if (SessionMode.FILE.equals(sessionMode)) {
             String sessionStorePath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR,
